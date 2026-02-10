@@ -1,0 +1,155 @@
+# 📄 Docs.txt
+# Project: 3-Tier Notes Application (Kubernetes Orchestration Demo)
+
+--------------------------------------------------
+1. APPLICATION OVERVIEW
+--------------------------------------------------
+This project is a 3-tier web application deployed on Kubernetes to demonstrate:
+- Container orchestration
+- Configuration management
+- Secrets handling
+- Service-to-service communication
+- Persistent storage usage
+
+Tiers:
+1. Frontend (Nginx + HTML/JS)
+2. Backend (Node.js + Express)
+3. Database (MongoDB)
+
+--------------------------------------------------
+2. COMPONENTS & RUNTIME PORTS
+--------------------------------------------------
+Component   | Technology            | Container Port | Exposed Via
+------------|------------------------|----------------|-------------
+Frontend    | Nginx                  | 80             | Ingress / NodePort
+Backend     | Node.js (Express)      | 5000           | ClusterIP
+Database    | MongoDB                | 27017          | ClusterIP
+
+--------------------------------------------------
+3. ENVIRONMENT VARIABLES (ConfigMaps / Secrets)
+--------------------------------------------------
+
+BACKEND CONFIGMAP VARIABLES
+- MONGO_URI
+  Source      : ConfigMap
+  Description : MongoDB connection string
+  Example     : mongodb://mongo-service:27017/notesdb
+
+- PORT
+  Source      : ConfigMap
+  Description : Backend application port
+  Example     : 5000
+
+
+BACKEND SECRETS
+- DB_USER
+  Source      : Secret
+  Description : MongoDB username
+
+- DB_PASS
+  Source      : Secret
+  Description : MongoDB password
+
+
+FRONTEND CONFIGMAP VARIABLES
+- API_URL
+  Source      : ConfigMap
+  Description : Backend service URL
+  Example     : http://backend-service:5000
+
+--------------------------------------------------
+4. KUBERNETES SERVICES & DNS REFERENCES
+--------------------------------------------------
+Service Name        | Namespace | Type       | Target
+--------------------|-----------|------------|-----------------
+frontend-service    | frontend  | NodePort   | Frontend Pods
+backend-service     | backend   | ClusterIP  | Backend Pods
+mongo-service       | database  | ClusterIP  | MongoDB Pod
+
+Internal Communication:
+- Backend → MongoDB
+  mongodb://mongo-service:27017
+
+- Frontend → Backend
+  http://backend-service:5000
+
+--------------------------------------------------
+5. PERSISTENT STORAGE (DATABASE – STATEFULSET)
+--------------------------------------------------
+MongoDB is deployed using a Kubernetes StatefulSet to ensure:
+- Stable network identity
+- Stable pod naming
+- Dedicated persistent storage per pod
+
+Resources Used:
+- StatefulSet            : Manages MongoDB pod lifecycle
+- VolumeClaimTemplates   : Automatically creates PVCs
+- PersistentVolume (PV)  : Underlying storage provisioned via StorageClass
+- StorageClass           : Handles dynamic volume provisioning
+
+Storage Behavior:
+- Each MongoDB pod gets its own PVC
+- PVCs are not deleted when pods restart
+- Data remains intact across pod restarts and rescheduling
+
+Example:
+- Pod Name : mongo-0
+- PVC Name : mongo-data-mongo-0
+
+MongoDB data survives:
+- Pod restarts
+- Node rescheduling
+- Application redeployments
+
+This setup reflects production-style stateful workload management.
+
+
+--------------------------------------------------
+6. IMAGE DETAILS
+--------------------------------------------------
+Component | Image Name
+----------|-------------------------------
+Frontend  | your-dockerhub/frontend:latest
+Backend   | your-dockerhub/backend:latest
+Database  | mongo:6
+
+--------------------------------------------------
+7. DEPLOYMENT STRATEGY
+--------------------------------------------------
+- Frontend and Backend use Kubernetes Deployments
+- MongoDB runs as a single-replica Deployment
+- Services enable internal communication
+- Configuration changes do NOT require image rebuilds
+
+--------------------------------------------------
+8. CONFIGURATION CHANGE FLOW
+--------------------------------------------------
+Change Needed           | Action Required
+------------------------|----------------------------------------
+Backend API URL         | Update Frontend ConfigMap
+MongoDB Host            | Update Backend ConfigMap
+Database Credentials   | Update Kubernetes Secret
+Application Code        | Rebuild & push Docker image
+
+--------------------------------------------------
+9. SECURITY CONSIDERATIONS
+--------------------------------------------------
+- No secrets stored in code or images
+- Secrets managed via Kubernetes Secrets
+- Internal services use ClusterIP
+- Only frontend is externally exposed
+
+--------------------------------------------------
+10. PROJECT PURPOSE
+--------------------------------------------------
+This project is designed to:
+- Demonstrate Kubernetes core concepts
+- Follow real-world DevOps practices
+- Serve as a job-ready Kubernetes project
+
+--------------------------------------------------
+INTERVIEW ONE-LINER
+--------------------------------------------------
+"I deployed a 3-tier application on Kubernetes using config-driven containers,
+secure secrets management, persistent storage, and internal service discovery."
+

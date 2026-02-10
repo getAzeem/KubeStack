@@ -1,0 +1,24 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: backend
+  namespace: backend
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: myselfazeem/notes-backend:v2
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: backend-config
