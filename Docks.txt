@@ -148,8 +148,5 @@ This project is designed to:
 - Serve as a job-ready Kubernetes project
 
 --------------------------------------------------
-INTERVIEW ONE-LINER
---------------------------------------------------
-"I deployed a 3-tier application on Kubernetes using config-driven containers,
-secure secrets management, persistent storage, and internal service discovery."
+
 
